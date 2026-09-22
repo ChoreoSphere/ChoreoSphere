@@ -1,0 +1,17 @@
+# Global Fallback (Project Lead)
+*       @Roaimkhan
+
+# NISAR Fetching & Data Cleaning Pipeline (Lead: Roaim)
+/backend/pipelines/         @Roaimkhan @shawal-shamraiz
+
+# 3D Map Engine & Layer Draping Logic (Lead: Shawal)
+/frontend/map/              @shawal-shamraiz @Roaimkhan
+
+# Streamlit UI Components & Controls (Lead: Huzaiffa)
+/frontend/ui/               @huzaifa-huzzi @Roaimkhan
+/backend/main               @huzaifa-huzzi @Roaimkhan
+/backend/requirements       @huzaifa-huzzi @Roaimkhan
+
+# Project Documentation & Specifications
+README.md                   @Roaimkhan
+/docs/                      @Roaimkhan @shawal-shamraiz @huzaifa-huzzi
