@@ -122,6 +122,29 @@ curl "http://127.0.0.1:8000/api/dem/heatmap?utm_source=gemini"
 
 If configured correctly, the endpoint should return a JSON payload representing the DEM/heatmap matrix derived from the granule.
 
+## Quickstart (3D visualization)
+
+The steps above get the backend running. To generate the interactive 3D terrain + radar visualization, a few extra pieces are needed.
+
+1) Place a Digital Elevation Model (DEM) GeoTIFF at `data/output_hh.tif` in the repository root. This file is not included in the repository (too large for git), so each teammate needs their own copy, covering the same region as the NISAR granule.
+
+2) Align the DEM to the NISAR grid. The DEM and the radar file are usually stored in different map projections, so they need to be reprojected onto the same pixel grid before they can be combined. Run this once, from the repository root, after your `.env` and `data/output_hh.tif` are both in place:
+
+```bash
+python src/frontend/match_dem_to_radar.py
+```
+
+This reads the exact grid definition already stored inside your NISAR `.h5` file and produces a new file, `data/dem_matched.tif`, that lines up with it pixel-for-pixel. `src/frontend/map/visualizer_3d.py` looks for this file automatically.
+
+3) Generate the interactive visualization:
+
+```bash
+python -m src.frontend.main_visualization
+```
+
+This produces `nisar_visualization.html` in the repository root, containing both the 2D heatmap and the 3D terrain + radar overlay. Open it directly in a browser.
+
+Note: `data/`, `*.tif`, and `.env` are all gitignored on purpose, since they're either large binary files or contain machine-specific paths. Nothing under `data/` is shared through git — each teammate sources their own DEM and points `.env` at their own local granule.
 ## Project layout
 
 - `src/backend/` — FastAPI backend, processing pipelines, and geospatial API endpoints
