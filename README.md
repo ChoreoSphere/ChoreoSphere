@@ -126,7 +126,55 @@ If configured correctly, the endpoint should return a JSON payload representing 
 
 The steps above get the backend running. To generate the interactive 3D terrain + radar visualization, a few extra pieces are needed.
 
-1) Place a Digital Elevation Model (DEM) GeoTIFF at `data/output_hh.tif` in the repository root. This file is not included in the repository (too large for git), so each teammate needs their own copy, covering the same region as the NISAR granule.
+1) Get the elevation data (Copernicus GLO-30 DEM) and save it as `data/output_hh.tif` in the repository root. The file is ~256 MB, so it is not stored in git; every teammate downloads it once, the same way as the NISAR granule.
+
+Area covered by the DEM we use (WGS 84 / EPSG:4326):
+
+| West | East | South | North |
+| --- | --- | --- | --- |
+| 140.4 | 153.0 | 74.0 | 77.0 |
+
+Download it from [OpenTopography](https://portal.opentopography.org/) (free account, then request an API key from your account page):
+
+Linux / macOS / Ubuntu:
+
+```bash
+mkdir -p data
+curl -o data/output_hh.tif "https://portal.opentopography.org/API/globaldem?demtype=COP30&south=74&north=77&west=140.4&east=153.0&outputFormat=GTiff&API_Key=YOUR_API_KEY"
+```
+
+Windows (PowerShell):
+
+```powershell
+New-Item -ItemType Directory -Force data
+Invoke-WebRequest -Uri "https://portal.opentopography.org/API/globaldem?demtype=COP30&south=74&north=77&west=140.4&east=153.0&outputFormat=GTiff&API_Key=YOUR_API_KEY" -OutFile data\output_hh.tif
+```
+
+Or use the website: Data > Global DEMs > Copernicus GLO-30, enter the bounds above, choose GeoTIFF, and save the result as `data/output_hh.tif`. Never commit your API key. If the download is only a few KB, open it in a text editor; it will contain an error message (bad key, area too large, etc.).
+
+**Where the file goes (folder layout):**
+
+```
+ChoreoSphere/              <- repository root (the folder containing README.md)
+├── data/                  <- create this folder if it doesn't exist
+│   ├── output_hh.tif      <- the DEM you download or receive goes HERE (exact name)
+│   └── dem_matched.tif    <- created automatically in step 2 below
+├── src/
+├── .env
+└── README.md
+```
+
+Already have the DEM file from a teammate (shared link, USB, etc.) instead of downloading it? Skip the download commands: create the `data` folder, copy the file into it, and rename it to exactly `output_hh.tif`. Then continue with the check below.
+
+Check that the file landed in the right part of the world :
+
+```bash
+python -c "import rasterio; s=rasterio.open('data/output_hh.tif'); print(s.crs, s.bounds, s.width, s.height)"
+```
+
+Expected: `EPSG:4326`, bounds of about left 140.4 / bottom 74.0 / right 153.0 / top 77.0, size 45360 x 10800. Anything else means the wrong file.
+
+Known limitation: the public COP30 download stops at 77.00 degrees north, slightly short of the full study area, so pixels beyond that edge have no elevation data.
 
 2) Align the DEM to the NISAR grid. The DEM and the radar file are usually stored in different map projections, so they need to be reprojected onto the same pixel grid before they can be combined. Run this once, from the repository root, after your `.env` and `data/output_hh.tif` are both in place:
 
